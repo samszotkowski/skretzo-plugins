@@ -43,7 +43,8 @@ public interface ChatSuccessRatesConfig extends Config
 	@ConfigItem(
 		keyName = "messageSuccess",
 		name = "Custom success message",
-		description = "The chat message used to track the success of a custom skilling action",
+		description = "The chat message used to track the success of a custom skilling action." +
+			"<br>Multiple messages can be tracked by delimiting with a line break.",
 		position = 3
 	)
 	default String messageSuccess()
@@ -54,7 +55,8 @@ public interface ChatSuccessRatesConfig extends Config
 	@ConfigItem(
 		keyName = "messageFailure",
 		name = "Custom failure message",
-		description = "The chat message used to track the failure of a custom skilling action",
+		description = "The chat message used to track the failure of a custom skilling action." +
+			"<br>Multiple messages can be tracked by delimiting with a line break.",
 		position = 4
 	)
 	default String messageFailure()

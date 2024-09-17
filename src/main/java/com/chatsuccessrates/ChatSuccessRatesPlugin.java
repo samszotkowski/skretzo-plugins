@@ -42,6 +42,7 @@ public class ChatSuccessRatesPlugin extends Plugin
 		SPAM
 	);
 	public static final String CONFIG_GROUP = "chatsuccessrates";
+	public static final String MESSAGE_DELIM = "\n";
 	private static final String DUPLICATE_PREFIX = " (";
 	private static final String DUPLICATE_SUFFIX = ")";
 	private static final String LEVEL_DELIMITER = ": ";
@@ -238,9 +239,24 @@ public class ChatSuccessRatesPlugin extends Plugin
 
 	private boolean isTrackedMessage(String message, ChatMessageType type)
 	{
-		return COLLAPSIBLE_MESSAGETYPES.contains(type) &&
-			((!config.messageSuccess().isEmpty() && message.equals(config.messageSuccess())) ||
-			(!config.messageFailure().isEmpty() && message.equals(config.messageFailure())));
+		if (COLLAPSIBLE_MESSAGETYPES.contains(type))
+		{
+			for (String successMessage : config.messageSuccess().split(MESSAGE_DELIM))
+			{
+				if (message.equals(successMessage))
+				{
+					return true;
+				}
+			}
+			for (String failureMessage : config.messageFailure().split(MESSAGE_DELIM))
+			{
+				if (message.equals(failureMessage))
+				{
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	private String formatMessage(String message)
