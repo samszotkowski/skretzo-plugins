@@ -42,7 +42,7 @@ public class ChatSuccessRatesPlugin extends Plugin
 		SPAM
 	);
 	public static final String CONFIG_GROUP = "chatsuccessrates";
-	public static final String MESSAGE_DELIM = "\n";
+	private static final String MESSAGE_DELIM = "\n";
 	private static final String DUPLICATE_PREFIX = " (";
 	private static final String DUPLICATE_SUFFIX = ")";
 	private static final String LEVEL_DELIMITER = ": ";
