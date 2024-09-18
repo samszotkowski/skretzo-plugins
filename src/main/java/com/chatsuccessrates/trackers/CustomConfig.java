@@ -10,6 +10,8 @@ import static com.chatsuccessrates.ChatSuccessRatesPlugin.COLLAPSIBLE_MESSAGETYP
 
 public class CustomConfig extends ChatSuccessRatesTracker
 {
+	private static final String MESSAGE_DELIM = "\n";
+
 	@Override
 	public ChatSuccessRatesSkill getSkill()
 	{
@@ -45,13 +47,19 @@ public class CustomConfig extends ChatSuccessRatesTracker
 		final int level = ChatSuccessRatesSkill.CUSTOM.equals(skill) ? client.getTotalLevel() :
 			(config.useBoostedLevel() ? client.getBoostedSkillLevel(skill.getSkill()) : client.getRealSkillLevel(skill.getSkill()));
 
-		if (config.messageSuccess().equals(message))
+		for (String successMessage : config.messageSuccess().split(MESSAGE_DELIM))
 		{
-			update(level, 1, 0);
+			if (message.equals(successMessage))
+			{
+				update(level, 1, 0);
+			}
 		}
-		else if (config.messageFailure().equals(message))
+		for (String failureMessage : config.messageFailure().split(MESSAGE_DELIM))
 		{
-			update(level, 0, 1);
+			if (message.equals(failureMessage))
+			{
+				update(level, 0, 1);
+			}
 		}
 	}
 }
