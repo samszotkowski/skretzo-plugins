@@ -44,7 +44,7 @@ public class ChatSuccessRatesPlugin extends Plugin
 		MESBOX
 	);
 	public static final String CONFIG_GROUP = "chatsuccessrates";
-	private static final String MESSAGE_DELIM = "\n";
+	public static final String MESSAGE_DELIM = "\n";
 	private static final String DUPLICATE_PREFIX = " (";
 	private static final String DUPLICATE_SUFFIX = ")";
 	private static final String LEVEL_DELIMITER = ": ";

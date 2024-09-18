@@ -7,11 +7,10 @@ import net.runelite.api.events.ChatMessage;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.ui.SkillColor;
 import static com.chatsuccessrates.ChatSuccessRatesPlugin.COLLAPSIBLE_MESSAGETYPES;
+import static com.chatsuccessrates.ChatSuccessRatesPlugin.MESSAGE_DELIM;
 
 public class CustomConfig extends ChatSuccessRatesTracker
 {
-	private static final String MESSAGE_DELIM = "\n";
-
 	@Override
 	public ChatSuccessRatesSkill getSkill()
 	{
