@@ -29,6 +29,7 @@ import net.runelite.client.ui.NavigationButton;
 import net.runelite.client.util.ImageUtil;
 import static net.runelite.api.ChatMessageType.GAMEMESSAGE;
 import static net.runelite.api.ChatMessageType.SPAM;
+import static net.runelite.api.ChatMessageType.MESBOX;
 
 @PluginDescriptor(
 	name = "Chat Success Rates",
@@ -39,7 +40,8 @@ public class ChatSuccessRatesPlugin extends Plugin
 {
 	public static final Set<ChatMessageType> COLLAPSIBLE_MESSAGETYPES = ImmutableSet.of(
 		GAMEMESSAGE,
-		SPAM
+		SPAM,
+		MESBOX
 	);
 	public static final String CONFIG_GROUP = "chatsuccessrates";
 	private static final String MESSAGE_DELIM = "\n";
