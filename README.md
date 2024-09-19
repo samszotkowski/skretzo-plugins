@@ -21,6 +21,8 @@ This plugin also comes with a few integrated presets to track a selection of ski
 - Level prefix: `Custom`
   - The skill level prefix/identifier on the tracked custom chat messages. Custom uses total level.
 - Success message: `        `
-  - The chat message used to track the success of a custom skilling action
+  - The chat message used to track the success of a custom skilling action.  
+    Multiple messages can be tracked by delimiting with a line break.
 - Failure message: `        `
-  - The chat message used to track the failure of a custom skilling action
+  - The chat message used to track the failure of a custom skilling action.  
+    Multiple messages can be tracked by delimiting with a line break.
