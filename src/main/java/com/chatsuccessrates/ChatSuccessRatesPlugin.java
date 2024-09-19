@@ -7,6 +7,7 @@ import com.google.inject.Provides;
 import java.awt.Toolkit;
 import java.awt.datatransfer.StringSelection;
 import java.awt.image.BufferedImage;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -28,8 +29,8 @@ import net.runelite.client.ui.ClientToolbar;
 import net.runelite.client.ui.NavigationButton;
 import net.runelite.client.util.ImageUtil;
 import static net.runelite.api.ChatMessageType.GAMEMESSAGE;
-import static net.runelite.api.ChatMessageType.SPAM;
 import static net.runelite.api.ChatMessageType.MESBOX;
+import static net.runelite.api.ChatMessageType.SPAM;
 
 @PluginDescriptor(
 	name = "Chat Success Rates",
@@ -51,22 +52,33 @@ public class ChatSuccessRatesPlugin extends Plugin
 	private static final String COPY_TO_CLIPBOARD_OPTION = "Copy";
 	private static final String COPY_TO_CLIPBOARD_TARGET = "Chat success rates";
 
+	private static final Map<ChatMessageType, EvictingLinkedHashMap<String, Duplicate>> DUPLICATE_CACHE = new HashMap<>();
+
+	static
+	{
+		for (ChatMessageType chatMessageType : COLLAPSIBLE_MESSAGETYPES)
+		{
+			DUPLICATE_CACHE.put(chatMessageType, new EvictingLinkedHashMap<String, Duplicate>());
+		}
+		DUPLICATE_CACHE.get(MESBOX).MAX_ENTRIES = 300;
+	}
+
 	private static class Duplicate
 	{
 		int messageId;
 		int count;
 	}
 
-	private final LinkedHashMap<String, Duplicate> duplicateChatCache = new LinkedHashMap<String, Duplicate>()
+	private static class EvictingLinkedHashMap<E, V> extends LinkedHashMap<E, V>
 	{
-		private static final int MAX_ENTRIES = 100;
+		int MAX_ENTRIES = 100;
 
 		@Override
-		protected boolean removeEldestEntry(Map.Entry<String, Duplicate> eldest)
+		protected boolean removeEldestEntry(Map.Entry<E, V> eldest)
 		{
 			return size() > MAX_ENTRIES;
 		}
-	};
+	}
 
 	private NavigationButton navigationButton;
 	private ChatSuccessRatesPluginPanel pluginPanel;
@@ -130,7 +142,10 @@ public class ChatSuccessRatesPlugin extends Plugin
 		pluginPanel = null;
 		navigationButton = null;
 
-		duplicateChatCache.clear();
+		for (ChatMessageType chatMessageType : DUPLICATE_CACHE.keySet())
+		{
+			DUPLICATE_CACHE.get(chatMessageType).clear();
+		}
 		client.refreshChat();
 	}
 
@@ -161,7 +176,16 @@ public class ChatSuccessRatesPlugin extends Plugin
 		final int messageId = intStack[intStackSize - 1];
 		String message = stringStack[stringStackSize - 1];
 
-		Duplicate duplicate = duplicateChatCache.get(message);
+		Duplicate duplicate = null;
+		for (ChatMessageType chatMessageType : DUPLICATE_CACHE.keySet())
+		{
+			Duplicate candidate = DUPLICATE_CACHE.get(chatMessageType).get(message);
+			if (candidate != null)
+			{
+				duplicate = candidate;
+				break;
+			}
+		}
 		if (duplicate == null)
 		{
 			return;
@@ -183,13 +207,14 @@ public class ChatSuccessRatesPlugin extends Plugin
 	public void onChatMessage(ChatMessage event)
 	{
 		String message = event.getMessage();
-		if (isTrackedMessage(message, event.getType()))
+		ChatMessageType messageType = event.getType();
+		if (isTrackedMessage(message, messageType))
 		{
 			message = formatMessage(message);
 
 			event.getMessageNode().setValue(message);
 
-			Duplicate duplicate = duplicateChatCache.remove(message);
+			Duplicate duplicate = DUPLICATE_CACHE.get(messageType).remove(message);
 			if (duplicate == null)
 			{
 				duplicate = new Duplicate();
@@ -197,7 +222,7 @@ public class ChatSuccessRatesPlugin extends Plugin
 
 			duplicate.count++;
 			duplicate.messageId = event.getMessageNode().getId();
-			duplicateChatCache.put(message, duplicate);
+			DUPLICATE_CACHE.get(messageType).put(message, duplicate);
 		}
 	}
 
@@ -205,8 +230,7 @@ public class ChatSuccessRatesPlugin extends Plugin
 	public void onMenuOpened(MenuOpened event)
 	{
 		final Widget chatboxMessageLines = client.getWidget(ComponentID.CHATBOX_MESSAGE_LINES);
-		if (duplicateChatCache.isEmpty() ||
-			chatboxMessageLines == null ||
+		if (chatboxMessageLines == null ||
 			!chatboxMessageLines.getBounds().contains(
 				client.getMouseCanvasPosition().getX(),
 				client.getMouseCanvasPosition().getY()))
@@ -228,13 +252,17 @@ public class ChatSuccessRatesPlugin extends Plugin
 	private String chatSuccessRatesSummary()
 	{
 		StringBuilder summary = new StringBuilder();
-		for (String key : duplicateChatCache.keySet())
+		for (ChatMessageType messageType : new ChatMessageType[]{GAMEMESSAGE, SPAM})
 		{
-			summary.append(summary.length() > 0 ? "\n" : "")
-				.append(key)
-				.append(DUPLICATE_PREFIX)
-				.append(duplicateChatCache.get(key).count)
-				.append(DUPLICATE_SUFFIX);
+			Map<String, Duplicate> duplicateCache = DUPLICATE_CACHE.get(messageType);
+			for (String key : duplicateCache.keySet())
+			{
+				summary.append(summary.length() > 0 ? "\n" : "")
+					.append(key)
+					.append(DUPLICATE_PREFIX)
+					.append(duplicateCache.get(key).count)
+					.append(DUPLICATE_SUFFIX);
+			}
 		}
 		return summary.toString();
 	}
